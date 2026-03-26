@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kubra Seguros — Simulador de Crescimento</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--kgreen:#2BB54B;--kgreen-light:#e8f8ec;--kgreen-dark:#1a7a30;
+--kdark:#1B3A2D;--kbg:#F5F3EE;--kcard:#FFFFFF;
+--ktext:#1B3A2D;--ktext2:#5A6B62;--ktext3:#8A9A92;
+--kred:#D84040;--kred-bg:#FDF0F0;
+--kblue:#2E6EAA;--kblue-bg:#EDF4FB;
+--korange:#D88B30;--korange-bg:#FDF5EB;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'DM Sans',sans-serif;background:var(--kbg);color:var(--ktext);line-height:1.7}
+nav{position:fixed;top:0;left:0;width:260px;height:100vh;background:var(--kdark);padding:2rem 0;overflow-y:auto;z-index:100;transition:transform .3s}
+nav .logo{padding:0 1.5rem 2rem;border-bottom:1px solid rgba(255,255,255,.1)}
+nav .logo h1{color:var(--kgreen);font-size:1.3rem;font-weight:700;letter-spacing:-.5px}
+nav .logo span{color:rgba(255,255,255,.5);font-size:.65rem;text-transform:uppercase;letter-spacing:3px;display:block;margin-top:2px}
+nav ul{list-style:none;padding:1rem 0}
+nav li a{display:flex;align-items:center;gap:10px;padding:.55rem 1.5rem;color:rgba(255,255,255,.6);text-decoration:none;font-size:.8rem;font-weight:400;transition:all .2s;border-left:3px solid transparent}
+nav li a:hover,nav li a.active{color:#fff;background:rgba(255,255,255,.05);border-left-color:var(--kgreen)}
+nav li a .num{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--kgreen);min-width:22px}
+.burger{display:none;position:fixed;top:1rem;left:1rem;z-index:200;background:var(--kdark);color:var(--kgreen);border:none;border-radius:8px;padding:8px 12px;font-size:1.2rem;cursor:pointer}
+main{margin-left:260px}
+.hero{background:var(--kdark);padding:3.5rem 3rem 2.5rem;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;bottom:-80px;right:-80px;width:400px;height:400px;background:var(--kgreen);opacity:.07;border-radius:50%}
+.hero h2{color:#fff;font-size:2.2rem;font-weight:700;letter-spacing:-1px;line-height:1.15}
+.hero h2 em{color:var(--kgreen);font-style:normal}
+.hero p{color:rgba(255,255,255,.55);font-size:.92rem;margin-top:.8rem;max-width:600px}
+.container{max-width:1100px;margin:0 auto;padding:2.5rem 3rem}
+section{margin-bottom:2.5rem}
+section .section-label{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--kgreen);text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem}
+section h3{font-size:1.5rem;font-weight:700;letter-spacing:-.5px;margin-bottom:.8rem;color:var(--kdark)}
+section h4{font-size:1.05rem;font-weight:600;margin:1.2rem 0 .6rem;color:var(--kdark)}
+section p{color:var(--ktext2);font-size:.9rem;margin-bottom:.7rem}
+section p strong{color:var(--ktext);font-weight:600}
+
+/* INPUT PANEL */
+.input-panel{background:var(--kcard);border-radius:16px;padding:1.8rem;margin:1.5rem 0;border:2px solid var(--kgreen);position:relative}
+.input-panel::before{content:'SIMULADOR';position:absolute;top:-10px;left:20px;background:var(--kgreen);color:#fff;font-size:.65rem;font-weight:700;padding:2px 12px;border-radius:100px;letter-spacing:2px}
+.input-panel h4{margin-top:.5rem;color:var(--kgreen-dark);font-size:1rem}
+.input-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:1rem}
+.input-group{display:flex;flex-direction:column;gap:4px}
+.input-group label{font-size:.72rem;color:var(--ktext3);text-transform:uppercase;letter-spacing:1px;font-weight:500}
+.input-group input{border:1.5px solid rgba(0,0,0,.1);border-radius:10px;padding:10px 14px;font-family:'Space Mono',monospace;font-size:.9rem;color:var(--kdark);background:var(--kbg);transition:border .2s;width:100%}
+.input-group input:focus{outline:none;border-color:var(--kgreen);background:#fff}
+.input-group .unit{font-size:.7rem;color:var(--ktext3);margin-top:2px}
+.input-section-title{grid-column:1/-1;font-size:.78rem;font-weight:600;color:var(--kgreen-dark);text-transform:uppercase;letter-spacing:1px;padding-top:.8rem;border-top:1px solid rgba(0,0,0,.06);margin-top:.3rem}
+.btn-calc{background:var(--kgreen);color:#fff;border:none;border-radius:12px;padding:12px 32px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;margin-top:1.2rem;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-calc:hover{background:var(--kgreen-dark);transform:translateY(-1px)}
+.btn-calc:active{transform:scale(.98)}
+
+.metrics-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:1.2rem 0}
+.metric-card{background:var(--kcard);border-radius:14px;padding:1rem;border:1px solid rgba(0,0,0,.04)}
+.metric-card .label{font-size:.68rem;color:var(--ktext3);text-transform:uppercase;letter-spacing:1px;font-weight:500}
+.metric-card .value{font-size:1.5rem;font-weight:700;margin:.2rem 0;color:var(--kdark);font-family:'Space Mono',monospace}
+.metric-card .sub{font-size:.72rem;color:var(--ktext3)}
+.metric-card.green .value{color:var(--kgreen)}
+.metric-card.red .value{color:var(--kred)}
+.metric-card.blue .value{color:var(--kblue)}
+
+.chart-wrap{background:var(--kcard);border-radius:16px;padding:1.5rem;margin:1.2rem 0;border:1px solid rgba(0,0,0,.04)}
+.chart-wrap h5{font-size:.82rem;font-weight:600;color:var(--ktext2);margin-bottom:.8rem}
+.chart-container{position:relative;width:100%;height:300px}
+
+table.data{width:100%;border-collapse:collapse;font-size:.8rem;margin:.8rem 0}
+table.data thead th{background:var(--kdark);color:#fff;padding:9px 12px;text-align:left;font-weight:500;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px}
+table.data thead th:first-child{border-radius:10px 0 0 0}table.data thead th:last-child{border-radius:0 10px 0 0}
+table.data tbody td{padding:9px 12px;border-bottom:1px solid rgba(0,0,0,.04);color:var(--ktext2)}
+table.data tbody tr:nth-child(even){background:rgba(0,0,0,.015)}
+table.data .num-col{text-align:right;font-family:'Space Mono',monospace;font-size:.78rem}
+table.data .green{color:var(--kgreen-dark);font-weight:600}
+table.data .red{color:var(--kred);font-weight:600}
+table.data .bold{font-weight:600;color:var(--ktext)}
+
+.callout{border-left:4px solid var(--kgreen);background:var(--kgreen-light);padding:.9rem 1.1rem;border-radius:0 12px 12px 0;margin:1rem 0;font-size:.85rem;color:var(--kgreen-dark)}
+.callout.warn{border-color:var(--korange);background:var(--korange-bg);color:#8B5E1A}
+.callout.danger{border-color:var(--kred);background:var(--kred-bg);color:#8B2020}
+.callout.info{border-color:var(--kblue);background:var(--kblue-bg);color:#1A4A7A}
+
+.scenario-tabs{display:flex;gap:8px;margin:1.2rem 0}
+.scenario-tabs button{padding:7px 18px;border-radius:100px;border:2px solid rgba(0,0,0,.08);background:var(--kcard);font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .2s;color:var(--ktext2)}
+.scenario-tabs button.active,.scenario-tabs button:hover{border-color:var(--kgreen);background:var(--kgreen-light);color:var(--kgreen-dark)}
+
+.target-banner{background:linear-gradient(135deg,var(--kdark) 0%,#2a5940 100%);border-radius:16px;padding:1.3rem 1.8rem;margin:1.2rem 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem}
+.target-banner .tb-item{text-align:center;min-width:100px}
+.target-banner .tb-label{font-size:.65rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px}
+.target-banner .tb-value{font-size:1.4rem;font-weight:700;color:var(--kgreen);font-family:'Space Mono',monospace}
+.target-banner .tb-sub{font-size:.68rem;color:rgba(255,255,255,.4)}
+
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:.8rem 0;font-size:.75rem;color:var(--ktext3)}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend .dot{width:10px;height:10px;border-radius:2px;display:inline-block}
+
+footer{background:var(--kdark);padding:1.5rem 3rem;text-align:center}
+footer p{color:rgba(255,255,255,.4);font-size:.75rem}
+
+@media(max-width:900px){
+  nav{transform:translateX(-100%)}nav.open{transform:translateX(0)}.burger{display:block}
+  main{margin-left:0}.hero{padding:3rem 1.5rem 2rem}.hero h2{font-size:1.7rem}
+  .container{padding:2rem 1.2rem}.target-banner{flex-direction:column}.input-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+
+<nav>
+  <div class="logo"><h1>◄ kubra</h1><span>simulador</span></div>
+  <ul>
+    <li><a href="#simulador" class="active"><span class="num">00</span>Simulador</a></li>
+    <li><a href="#dashboard"><span class="num">01</span>Dashboard</a></li>
+    <li><a href="#benchmark"><span class="num">02</span>Benchmark Frota</a></li>
+    <li><a href="#cenarios"><span class="num">03</span>3 Cenários</a></li>
+    <li><a href="#detalhado"><span class="num">04</span>Mês a Mês</a></li>
+    <li><a href="#midia"><span class="num">05</span>Estratégia de Mídia</a></li>
+    <li><a href="#breakeven"><span class="num">06</span>Breakeven</a></li>
+    <li><a href="#kpis"><span class="num">07</span>KPIs</a></li>
+  </ul>
+</nav>
+
+<main>
+  <div class="hero">
+    <h2>Simulador de<br><em>Crescimento</em></h2>
+    <p>Altere os parâmetros abaixo e recalcule todas as projeções, cenários e métricas em tempo real.</p>
+  </div>
+
+  <div class="container">
+
+    <!-- SIMULADOR INPUTS -->
+    <section id="simulador">
+      <div class="input-panel">
+        <h4>Parâmetros do Negócio</h4>
+        <div class="input-grid">
+          <div class="input-group"><label>Tamanho da Base (leads)</label><input type="number" id="in_base" value="70000"><div class="unit">base NTC/Comjovem</div></div>
+          <div class="input-group"><label>Taxa de Conversão NTC</label><input type="number" id="in_conv" value="14" step="0.5"><div class="unit">% dos leads</div></div>
+          <div class="input-group"><label>Meta de Faturamento Anual</label><input type="number" id="in_meta" value="700000" step="10000"><div class="unit">R$ prêmio bruto</div></div>
+          <div class="input-group"><label>Verba Mídia Mensal (inicial)</label><input type="number" id="in_verba" value="5000" step="500"><div class="unit">R$/mês</div></div>
+
+          <div class="input-section-title">Receita Unitária dos Produtos (R$/mês)</div>
+          <div class="input-group"><label>Saúde Premiada</label><input type="number" id="in_p1" value="15.90" step="0.10"><div class="unit">AP + Telemedicina + CAP</div></div>
+          <div class="input-group"><label>Lar Premiado</label><input type="number" id="in_p2" value="12.90" step="0.10"><div class="unit">Residencial Básico + CAP</div></div>
+          <div class="input-group"><label>Vida Premiada</label><input type="number" id="in_p3" value="7.90" step="0.10"><div class="unit">AP + Funeral + CAP</div></div>
+          <div class="input-group"><label>Proteção Premiada</label><input type="number" id="in_p4" value="7.90" step="0.10"><div class="unit">Proteção Compras + CAP</div></div>
+
+          <div class="input-section-title">Premissas Operacionais</div>
+          <div class="input-group"><label>Churn Mensal (%)</label><input type="number" id="in_churn" value="5" step="0.5"><div class="unit">cenário realista</div></div>
+          <div class="input-group"><label>Produtos por Cliente (média)</label><input type="number" id="in_prodcli" value="2" step="0.5" min="1" max="4"><div class="unit">1 a 4 produtos</div></div>
+          <div class="input-group"><label>Custo Fixo Mensal (R$)</label><input type="number" id="in_fixo" value="11000" step="500"><div class="unit">plataforma + admin</div></div>
+          <div class="input-group"><label>Meses de Ativação NTC</label><input type="number" id="in_ondas" value="6" min="1" max="12"><div class="unit">ondas de disparo</div></div>
+        </div>
+        <button class="btn-calc" onclick="recalculate()">Recalcular projeções →</button>
+      </div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard">
+      <div class="section-label">01</div>
+      <h3>Dashboard</h3>
+      <div id="target-banner-container"></div>
+      <div id="metrics-container"></div>
+      <div class="chart-wrap"><h5>Receita bruta acumulada — 3 cenários vs meta</h5><div class="chart-container"><canvas id="chartAcum"></canvas></div></div>
+      <div class="legend">
+        <span><span class="dot" style="background:#D84040"></span>Pessimista</span>
+        <span><span class="dot" style="background:#2E6EAA"></span>Realista</span>
+        <span><span class="dot" style="background:#2BB54B"></span>Otimista</span>
+        <span><span class="dot" style="background:#D88B30"></span>Meta anual</span>
+      </div>
+    </section>
+
+    <!-- BENCHMARK -->
+    <section id="benchmark">
+      <div class="section-label">02</div>
+      <h3>Benchmark Frota Advisor</h3>
+      <p>Dados reais de 01/01 a 24/03/2026 — Meta Ads + Google Ads consolidados.</p>
+      <table class="data">
+        <thead><tr><th>Métrica</th><th class="num-col">Meta Ads</th><th class="num-col">Google Ads</th><th class="num-col">Total</th></tr></thead>
+        <tbody>
+          <tr><td class="bold">Investimento</td><td class="num-col">R$241</td><td class="num-col">R$847</td><td class="num-col bold">R$1.088</td></tr>
+          <tr><td class="bold">Impressões</td><td class="num-col">44.438</td><td class="num-col">89.877</td><td class="num-col bold">134.315</td></tr>
+          <tr><td class="bold">Cliques</td><td class="num-col">899</td><td class="num-col">3.314</td><td class="num-col bold">4.213</td></tr>
+          <tr><td class="bold">CPC</td><td class="num-col">R$0,31</td><td class="num-col green">R$0,26</td><td class="num-col bold">R$0,26</td></tr>
+          <tr><td class="bold">CPM</td><td class="num-col green">R$5,43</td><td class="num-col">R$9,42</td><td class="num-col bold">R$8,10</td></tr>
+          <tr><td class="bold">CTR</td><td class="num-col">1,77%</td><td class="num-col green">3,69%</td><td class="num-col bold">3,14%</td></tr>
+        </tbody>
+      </table>
+      <div class="callout info">Google Ads entregou 79% dos cliques com CPC menor (R$0,26) e CTR 2x maior (3,69%). Busca intencional converte melhor para seguros.</div>
+    </section>
+
+    <!-- CENÁRIOS -->
+    <section id="cenarios">
+      <div class="section-label">03</div>
+      <h3>Projeção 12 Meses — Três Cenários</h3>
+      <div class="chart-wrap"><h5>Base ativa de clientes por cenário</h5><div class="chart-container"><canvas id="chartBase"></canvas></div></div>
+      <div class="legend">
+        <span><span class="dot" style="background:#D84040"></span>Pessimista (churn ×1.6, conv ÷2, ticket ÷1.5)</span>
+        <span><span class="dot" style="background:#2E6EAA"></span>Realista (seus parâmetros)</span>
+        <span><span class="dot" style="background:#2BB54B"></span>Otimista (churn ×0.6, conv ×1.3, ticket ×1.5)</span>
+      </div>
+      <div class="chart-wrap"><h5>Receita bruta mensal por cenário</h5><div class="chart-container"><canvas id="chartRevMes"></canvas></div></div>
+      <div id="scenario-summary"></div>
+    </section>
+
+    <!-- DETALHADO MÊS A MÊS -->
+    <section id="detalhado">
+      <div class="section-label">04</div>
+      <h3>Projeção Mês a Mês (Cenário Realista)</h3>
+      <div id="detail-table-container"></div>
+    </section>
+
+    <!-- MÍDIA -->
+    <section id="midia">
+      <div class="section-label">05</div>
+      <h3>Estratégia de Mídia</h3>
+      <div id="media-table-container"></div>
+      <div class="chart-wrap"><h5>Mix de canais</h5><div style="position:relative;width:100%;height:260px"><canvas id="chartMix"></canvas></div></div>
+    </section>
+
+    <!-- BREAKEVEN -->
+    <section id="breakeven">
+      <div class="section-label">06</div>
+      <h3>Análise de Breakeven</h3>
+      <div id="be-metrics"></div>
+      <div class="chart-wrap"><h5>Clientes necessários por número de produtos</h5><div style="position:relative;width:100%;height:240px"><canvas id="chartBE"></canvas></div></div>
+    </section>
+
+    <!-- KPIs -->
+    <section id="kpis">
+      <div class="section-label">07</div>
+      <h3>KPIs Gerenciais</h3>
+      <div id="kpi-table-container"></div>
+    </section>
+
+  </div>
+  <footer><p>Kubra Seguros — Simulador de Crescimento · Março 2026</p></footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const M = ['M1','M2','M3','M4','M5','M6','M7','M8','M9','M10','M11','M12'];
+const gc='rgba(0,0,0,0.04)', tc='#8A9A92';
+const fmt = n => n.toLocaleString('pt-BR',{maximumFractionDigits:0});
+const fmtR = n => 'R$'+fmt(Math.round(n));
+const fmtRk = n => n>=1000000?'R$'+(n/1000000).toFixed(1)+'M':'R$'+(n/1000).toFixed(0)+'k';
+
+let charts = {};
+function getOrCreate(canvasId, config) {
+  if(charts[canvasId]) charts[canvasId].destroy();
+  charts[canvasId] = new Chart($(canvasId), config);
+  return charts[canvasId];
+}
+const baseOpts = (title) => ({
+  responsive:true, maintainAspectRatio:false,
+  plugins:{legend:{display:false},title:{display:!!title,text:title,color:'#5A6B62',font:{size:13,weight:500,family:'DM Sans'}}},
+  scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:11,family:'DM Sans'}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:11,family:'DM Sans'}}}}
+});
+
+function simulate(params) {
+  const {baseLeads,convNTC,metaAnual,verba,p1,p2,p3,p4,churn,prodCli,custoFixo,mesesOnda} = params;
+  const ticketFull = p1+p2+p3+p4;
+  const comissaoUnit = ticketFull * 0.5 * 0.5; // carregamento 50%, comissão 50% do carregamento (por produto cheio)
+  
+  // Ticket based on prodCli
+  const prices = [p1,p2,p3,p4].sort((a,b)=>b-a);
+  let ticketMedio = 0;
+  for(let i=0; i<Math.min(Math.floor(prodCli),4); i++) ticketMedio += prices[i];
+  const frac = prodCli - Math.floor(prodCli);
+  if(frac > 0 && Math.floor(prodCli) < 4) ticketMedio += prices[Math.floor(prodCli)] * frac;
+  
+  const comissaoPerClient = ticketMedio * 0.5 * 0.5;
+  const totalNTC = Math.round(baseLeads * convNTC / 100);
+  const ntcPerMonth = Math.round(totalNTC / mesesOnda);
+  
+  // Traffic params (realista uses benchmark CPC ~0.30 blended)
+  const cpcBlended = 0.30;
+  const convLP = 0.15;
+  const convLeadCliente = 0.12;
+  const trafegoVerba = verba * 0.70;
+  const clicksPerMonth = Math.round(trafegoVerba / cpcBlended);
+  const leadsPerMonth = Math.round(clicksPerMonth * convLP);
+  const clientesPagosPerMonth = Math.round(leadsPerMonth * convLeadCliente);
+  
+  function runScenario(churnMult, convMult, ticketMult, ntcMult) {
+    const ch = (churn/100) * churnMult;
+    const ntcM = Math.round(ntcPerMonth * ntcMult);
+    const pagoM = Math.round(clientesPagosPerMonth * convMult);
+    const tk = ticketMedio * ticketMult;
+    
+    let base = 0;
+    let acum = 0;
+    const data = [];
+    for(let m=1; m<=12; m++) {
+      const ntcNew = m <= mesesOnda ? ntcM : 0;
+      base = Math.round(base * (1-ch)) + ntcNew + pagoM;
+      const rev = base * tk;
+      acum += rev;
+      const comissao = base * (comissaoPerClient * ticketMult);
+      data.push({month:m, ntcNew, pagoNew:pagoM, base, rev, acum, comissao,
+        custos: custoFixo + (m<=3?verba:(m<=6?verba*1.5:(m<=9?verba*2:verba*3))),
+      });
+    }
+    return data;
+  }
+  
+  const real = runScenario(1, 1, 1, 1);
+  const pess = runScenario(1.6, 0.5, 0.67, 0.5);
+  const opt = runScenario(0.6, 1.5, 1.5, 1.3);
+  
+  return {params, ticketFull, ticketMedio, comissaoPerClient, totalNTC, ntcPerMonth, clientesPagosPerMonth,
+    cpcBlended, leadsPerMonth, real, pess, opt};
+}
+
+function recalculate() {
+  const params = {
+    baseLeads: +$('in_base').value,
+    convNTC: +$('in_conv').value,
+    metaAnual: +$('in_meta').value,
+    verba: +$('in_verba').value,
+    p1: +$('in_p1').value, p2: +$('in_p2').value, p3: +$('in_p3').value, p4: +$('in_p4').value,
+    churn: +$('in_churn').value,
+    prodCli: +$('in_prodcli').value,
+    custoFixo: +$('in_fixo').value,
+    mesesOnda: +$('in_ondas').value,
+  };
+  
+  const sim = simulate(params);
+  renderAll(sim);
+}
+
+function renderAll(sim) {
+  const {params, ticketFull, ticketMedio, comissaoPerClient, totalNTC, ntcPerMonth, clientesPagosPerMonth, leadsPerMonth, real, pess, opt} = sim;
+  const metaMes = params.metaAnual / 12;
+  
+  // Target banner
+  $('target-banner-container').innerHTML = `
+    <div class="target-banner">
+      <div class="tb-item"><div class="tb-label">Meta anual</div><div class="tb-value">${fmtRk(params.metaAnual)}</div><div class="tb-sub">prêmio bruto</div></div>
+      <div class="tb-item"><div class="tb-label">Base NTC</div><div class="tb-value">${fmt(params.baseLeads)}</div><div class="tb-sub">leads</div></div>
+      <div class="tb-item"><div class="tb-label">Conv. NTC</div><div class="tb-value">${params.convNTC}%</div><div class="tb-sub">${fmt(totalNTC)} clientes</div></div>
+      <div class="tb-item"><div class="tb-label">Ticket médio</div><div class="tb-value">R$${ticketMedio.toFixed(2)}</div><div class="tb-sub">${params.prodCli} prod./cliente</div></div>
+      <div class="tb-item"><div class="tb-label">Rec. mensal (M12)</div><div class="tb-value">${fmtRk(real[11].rev)}</div><div class="tb-sub">${fmt(real[11].base)} clientes</div></div>
+    </div>`;
+    
+  // Metrics
+  const realAnual = real[11].acum;
+  const metaPct = Math.round(realAnual / params.metaAnual * 100);
+  const metaColor = metaPct >= 100 ? 'green' : metaPct >= 70 ? '' : 'red';
+  const mesAtingeMeta = real.findIndex(d => d.acum >= params.metaAnual);
+  const mesMetaStr = mesAtingeMeta >= 0 ? `Mês ${mesAtingeMeta+1}` : 'Não atinge';
+  
+  $('metrics-container').innerHTML = `
+    <div class="metrics-row">
+      <div class="metric-card ${metaColor}"><div class="label">Receita anual (realista)</div><div class="value">${fmtRk(realAnual)}</div><div class="sub">${metaPct}% da meta</div></div>
+      <div class="metric-card blue"><div class="label">Meta atingida em</div><div class="value">${mesMetaStr}</div><div class="sub">acumulado</div></div>
+      <div class="metric-card"><div class="label">Base ativa (M12)</div><div class="value">${fmt(real[11].base)}</div><div class="sub">cenário realista</div></div>
+      <div class="metric-card green"><div class="label">Clientes NTC total</div><div class="value">${fmt(totalNTC)}</div><div class="sub">${ntcPerMonth}/mês × ${params.mesesOnda} meses</div></div>
+      <div class="metric-card"><div class="label">Clientes tráfego</div><div class="value">${fmt(clientesPagosPerMonth)}</div><div class="sub">/mês via pago</div></div>
+      <div class="metric-card blue"><div class="label">Comissão BLB/cli</div><div class="value">R$${comissaoPerClient.toFixed(2)}</div><div class="sub">/mês</div></div>
+    </div>`;
+
+  // Chart: Accumulated revenue
+  getOrCreate('chartAcum',{type:'line',data:{labels:M,datasets:[
+    {data:pess.map(d=>d.acum),borderColor:'#D84040',tension:.3,pointRadius:3,borderWidth:2},
+    {data:real.map(d=>d.acum),borderColor:'#2E6EAA',tension:.3,pointRadius:3,borderWidth:2},
+    {data:opt.map(d=>d.acum),borderColor:'#2BB54B',tension:.3,pointRadius:3,borderWidth:2},
+    {data:Array(12).fill(params.metaAnual),borderColor:'#D88B30',borderDash:[8,4],pointRadius:0,borderWidth:2},
+  ]},options:{...baseOpts(),scales:{...baseOpts().scales,y:{...baseOpts().scales.y,ticks:{...baseOpts().scales.y.ticks,callback:v=>fmtRk(v)}}}}});
+
+  // Chart: Base ativa
+  getOrCreate('chartBase',{type:'line',data:{labels:M,datasets:[
+    {data:pess.map(d=>d.base),borderColor:'#D84040',backgroundColor:'rgba(216,64,64,.06)',fill:true,tension:.3,pointRadius:3,borderWidth:2},
+    {data:real.map(d=>d.base),borderColor:'#2E6EAA',backgroundColor:'rgba(46,110,170,.06)',fill:true,tension:.3,pointRadius:3,borderWidth:2},
+    {data:opt.map(d=>d.base),borderColor:'#2BB54B',backgroundColor:'rgba(43,181,75,.06)',fill:true,tension:.3,pointRadius:3,borderWidth:2},
+  ]},options:{...baseOpts(),scales:{...baseOpts().scales,y:{...baseOpts().scales.y,ticks:{...baseOpts().scales.y.ticks,callback:v=>fmt(v)},beginAtZero:true}}}});
+
+  // Chart: Rev mensal
+  getOrCreate('chartRevMes',{type:'bar',data:{labels:M,datasets:[
+    {data:pess.map(d=>d.rev),backgroundColor:'#D84040',borderRadius:4,barPercentage:.7},
+    {data:real.map(d=>d.rev),backgroundColor:'#2E6EAA',borderRadius:4,barPercentage:.7},
+    {data:opt.map(d=>d.rev),backgroundColor:'#2BB54B',borderRadius:4,barPercentage:.7},
+    {data:Array(12).fill(metaMes),type:'line',borderColor:'#D88B30',borderDash:[6,4],pointRadius:0,borderWidth:1.5},
+  ]},options:{...baseOpts(),scales:{...baseOpts().scales,y:{...baseOpts().scales.y,ticks:{...baseOpts().scales.y.ticks,callback:v=>fmtRk(v)},beginAtZero:true}}}});
+
+  // Scenario summary
+  const pessAnual = pess[11].acum, optAnual = opt[11].acum;
+  const pessMeta = Math.round(pessAnual/params.metaAnual*100), optMeta = Math.round(optAnual/params.metaAnual*100);
+  $('scenario-summary').innerHTML = `
+    <div class="metrics-row">
+      <div class="metric-card red"><div class="label">Pessimista (anual)</div><div class="value">${fmtRk(pessAnual)}</div><div class="sub">${pessMeta}% da meta · ${fmt(pess[11].base)} clientes M12</div></div>
+      <div class="metric-card blue"><div class="label">Realista (anual)</div><div class="value">${fmtRk(realAnual)}</div><div class="sub">${metaPct}% da meta · ${fmt(real[11].base)} clientes M12</div></div>
+      <div class="metric-card green"><div class="label">Otimista (anual)</div><div class="value">${fmtRk(optAnual)}</div><div class="sub">${optMeta}% da meta · ${fmt(opt[11].base)} clientes M12</div></div>
+    </div>`;
+
+  // Detail table
+  let dtHTML = `<table class="data"><thead><tr><th>Mês</th><th class="num-col">NTC novos</th><th class="num-col">Pago novos</th><th class="num-col">Base Ativa</th><th class="num-col">Receita Bruta</th><th class="num-col">Comissão BLB</th><th class="num-col">Custos</th><th class="num-col">Resultado</th><th class="num-col">Acumulado</th></tr></thead><tbody>`;
+  let acumRes = 0;
+  real.forEach(d => {
+    const res = d.comissao - d.custos;
+    acumRes += res;
+    const resClass = res >= 0 ? 'green' : 'red';
+    const acClass = acumRes >= 0 ? 'green' : 'red';
+    dtHTML += `<tr><td class="bold">M${d.month}</td><td class="num-col">${fmt(d.ntcNew)}</td><td class="num-col">${fmt(d.pagoNew)}</td><td class="num-col bold">${fmt(d.base)}</td><td class="num-col">${fmtR(d.rev)}</td><td class="num-col">${fmtR(d.comissao)}</td><td class="num-col">${fmtR(d.custos)}</td><td class="num-col ${resClass}">${fmtR(res)}</td><td class="num-col ${acClass}">${fmtR(acumRes)}</td></tr>`;
+  });
+  dtHTML += '</tbody></table>';
+  const finalRes = real.reduce((s,d)=>s+d.comissao-d.custos, 0);
+  const resCallout = finalRes >= 0
+    ? `<div class="callout"><strong>Resultado anual: ${fmtR(finalRes)}</strong> — operação lucrativa no cenário realista.</div>`
+    : `<div class="callout warn"><strong>Resultado anual: ${fmtR(finalRes)}</strong> — investimento do ano 1 para construir base recorrente. Breakeven projetado para ano 2.</div>`;
+  $('detail-table-container').innerHTML = dtHTML + resCallout;
+
+  // Media table
+  const v = params.verba;
+  $('media-table-container').innerHTML = `
+    <table class="data"><thead><tr><th>Canal</th><th class="num-col">% Verba</th><th class="num-col">${fmtR(v)}</th><th class="num-col">${fmtR(v*2)}</th><th>Objetivo</th></tr></thead><tbody>
+      <tr><td class="bold">Google Ads (Search)</td><td class="num-col green">30%</td><td class="num-col">${fmtR(v*.3)}</td><td class="num-col">${fmtR(v*2*.3)}</td><td>Alta intenção — busca ativa</td></tr>
+      <tr><td class="bold">Meta Ads (Instagram)</td><td class="num-col">25%</td><td class="num-col">${fmtR(v*.25)}</td><td class="num-col">${fmtR(v*2*.25)}</td><td>Awareness + Tráfego LP</td></tr>
+      <tr><td class="bold">Meta Ads (Facebook)</td><td class="num-col">10%</td><td class="num-col">${fmtR(v*.10)}</td><td class="num-col">${fmtR(v*2*.10)}</td><td>Retargeting + Conversão</td></tr>
+      <tr><td class="bold">Google Display/YT</td><td class="num-col">5%</td><td class="num-col">${fmtR(v*.05)}</td><td class="num-col">${fmtR(v*2*.05)}</td><td>Remarketing visual</td></tr>
+      <tr><td class="bold">WhatsApp Business</td><td class="num-col">15%</td><td class="num-col">${fmtR(v*.15)}</td><td class="num-col">${fmtR(v*2*.15)}</td><td>Ativação base NTC</td></tr>
+      <tr><td class="bold">E-mail Marketing</td><td class="num-col">5%</td><td class="num-col">${fmtR(v*.05)}</td><td class="num-col">${fmtR(v*2*.05)}</td><td>Automações e nutrição</td></tr>
+      <tr><td class="bold">Conteúdo/Influencers</td><td class="num-col">10%</td><td class="num-col">${fmtR(v*.10)}</td><td class="num-col">${fmtR(v*2*.10)}</td><td>UGC e prova social</td></tr>
+    </tbody></table>`;
+
+  getOrCreate('chartMix',{type:'doughnut',data:{
+    labels:['Google Search 30%','Instagram 25%','Facebook 10%','Google Display 5%','WhatsApp 15%','E-mail 5%','Influencers 10%'],
+    datasets:[{data:[30,25,10,5,15,5,10],backgroundColor:['#2E6EAA','#2BB54B','#1a7a30','#6BA3D6','#D88B30','#8A9A92','#534AB7'],borderWidth:0}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11,family:'DM Sans'},color:tc,padding:10,usePointStyle:true,pointStyleWidth:10}}}}});
+
+  // Breakeven
+  const prices = [params.p1,params.p2,params.p3,params.p4].sort((a,b)=>b-a);
+  const beData = [1,2,3,4].map(n => {
+    let tk = 0; for(let i=0;i<n;i++) tk+=prices[i];
+    const com = tk * 0.5 * 0.5;
+    return {n, tk, com, be: com > 0 ? Math.ceil(params.custoFixo / com) : Infinity};
+  });
+  
+  $('be-metrics').innerHTML = `<div class="metrics-row">${beData.map(d => {
+    const cls = d.n <= 1 ? 'red' : d.n >= 3 ? 'green' : 'blue';
+    return `<div class="metric-card ${cls}"><div class="label">${d.n} produto${d.n>1?'s':''} (R$${d.com.toFixed(2)}/mês)</div><div class="value">${fmt(d.be)}</div><div class="sub">clientes p/ breakeven</div></div>`;
+  }).join('')}</div>
+  <p style="font-size:.78rem;color:var(--ktext3)">*Custo fixo mensal de ${fmtR(params.custoFixo)}</p>`;
+
+  getOrCreate('chartBE',{type:'bar',data:{
+    labels:beData.map(d=>`${d.n} prod.\n(R$${d.com.toFixed(2)}/mês)`),
+    datasets:[{data:beData.map(d=>d.be),backgroundColor:['#D84040','#D88B30','#2E6EAA','#2BB54B'],borderRadius:6,barPercentage:.6}]
+  },options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>fmt(v)}},y:{grid:{display:false},ticks:{color:'#1B3A2D',font:{size:12,weight:500,family:'DM Sans'}}}}}});
+
+  // KPIs table
+  const cacPago = clientesPagosPerMonth > 0 ? params.verba*0.7 / clientesPagosPerMonth : 0;
+  const vidaMedia = params.churn > 0 ? 1/(params.churn/100) : 999;
+  const ltvBruto = ticketMedio * vidaMedia;
+  const ltvComissao = comissaoPerClient * vidaMedia;
+  const ltvCacPago = cacPago > 0 ? ltvComissao / cacPago : Infinity;
+  
+  $('kpi-table-container').innerHTML = `
+    <table class="data"><thead><tr><th>KPI</th><th class="num-col">Valor</th><th>Observação</th></tr></thead><tbody>
+      <tr><td class="bold">Ticket Médio/mês</td><td class="num-col bold">R$${ticketMedio.toFixed(2)}</td><td>${params.prodCli} produtos por cliente</td></tr>
+      <tr><td class="bold">Ticket Full (4 prod.)</td><td class="num-col">R$${sim.ticketFull.toFixed(2)}</td><td>todos os produtos</td></tr>
+      <tr><td class="bold">Comissão BLB/cliente/mês</td><td class="num-col">R$${comissaoPerClient.toFixed(2)}</td><td>50% carregamento × 50% comissão</td></tr>
+      <tr><td class="bold">CAC (tráfego pago)</td><td class="num-col ${cacPago<40?'green':'red'}">${fmtR(cacPago)}</td><td>CPC blended R$0,30</td></tr>
+      <tr><td class="bold">CAC (base NTC)</td><td class="num-col green">~R$0,30</td><td>custo de WhatsApp + e-mail</td></tr>
+      <tr><td class="bold">LTV (prêmio bruto)</td><td class="num-col">${fmtR(ltvBruto)}</td><td>${vidaMedia.toFixed(0)} meses de vida média</td></tr>
+      <tr><td class="bold">LTV (comissão BLB)</td><td class="num-col">${fmtR(ltvComissao)}</td><td>receita líquida para Kubra</td></tr>
+      <tr><td class="bold">LTV/CAC (tráfego)</td><td class="num-col ${ltvCacPago>=3?'green':ltvCacPago>=1?'':'red'}">${ltvCacPago.toFixed(1)}x</td><td>${ltvCacPago>=3?'saudável':ltvCacPago>=1?'aceitável':'insustentável'}</td></tr>
+      <tr><td class="bold">LTV/CAC (NTC)</td><td class="num-col green">${(ltvComissao/0.30).toFixed(0)}x</td><td>ativo mais rentável</td></tr>
+      <tr><td class="bold">Churn Mensal</td><td class="num-col">${params.churn}%</td><td>vida média: ${vidaMedia.toFixed(0)} meses</td></tr>
+      <tr><td class="bold">Payback (tráfego)</td><td class="num-col">${cacPago>0?(cacPago/comissaoPerClient).toFixed(1):'-'} meses</td><td>meses para recuperar CAC</td></tr>
+      <tr><td class="bold">Leads/mês (tráfego)</td><td class="num-col">${fmt(leadsPerMonth)}</td><td>15% conversão LP</td></tr>
+      <tr><td class="bold">Clientes/mês (tráfego)</td><td class="num-col">${fmt(clientesPagosPerMonth)}</td><td>12% fechamento</td></tr>
+    </tbody></table>`;
+}
+
+// Initial render
+recalculate();
+
+// Nav scroll tracking
+const links=document.querySelectorAll('nav a'),secs=document.querySelectorAll('section,.hero');
+window.addEventListener('scroll',()=>{let c='';secs.forEach(s=>{if(window.scrollY>=s.offsetTop-200)c=s.id});links.forEach(a=>{a.classList.toggle('active',a.getAttribute('href')==='#'+c)})});
+document.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',()=>document.querySelector('nav').classList.remove('open')));
+</script>
+</body>
+</html>
